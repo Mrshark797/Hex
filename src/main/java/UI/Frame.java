@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 
 public class Frame extends JFrame{
-    private Frame jFrame;
     private JMenuBar jMenuBar;
     private JMenu jMenu;
     private JMenuItem fileOpen;
@@ -24,7 +23,7 @@ public class Frame extends JFrame{
         this.transformIntoHEX = transformIntoHEX;
     }
     public void createFrame(){
-        jFrame = new Frame(transformIntoHEX);
+
         jMenuBar = new JMenuBar();
         jMenu = new JMenu("File");
         fileOpen = new JMenuItem("Open");
@@ -70,9 +69,13 @@ public class Frame extends JFrame{
         add(contentPane);
 
 
-        panelForTable = new JPanel();
+        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelForTable, panelForButtons);
+        jSplitPane.setDividerLocation(650);
 
-        setSize(800, 800);
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(jSplitPane, BorderLayout.CENTER);
+
+        setSize(1000, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
