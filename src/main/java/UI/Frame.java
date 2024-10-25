@@ -17,11 +17,7 @@ public class Frame extends JFrame{
     private JPanel panelForTable;
     private JPanel panelForButtons;
     private JFileChooser fileChooser;
-    private TransformIntoHEX transformIntoHEX;
 
-    public Frame(TransformIntoHEX transformIntoHEX){
-        this.transformIntoHEX = transformIntoHEX;
-    }
     public void createFrame(){
 
         jMenuBar = new JMenuBar();
@@ -39,6 +35,7 @@ public class Frame extends JFrame{
                 int ret = fileChooser.showOpenDialog(null);
                 if(ret == JFileChooser.APPROVE_OPTION){
                     File file = fileChooser.getSelectedFile();
+                    TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
                     transformIntoHEX.getFileInHEX(file);
                 }
             }
