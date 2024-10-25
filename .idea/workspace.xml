@@ -6,10 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c590752c-7b3d-490f-8586-ffc8e86f00ef" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Hex/Model/TransformIntoHEX.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Hex/Model/TransformIntoHEX.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Hex/UI/Frame$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Hex/UI/Frame$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Hex/UI/Frame.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Hex/UI/Frame.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/UI/Frame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/UI/Frame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,6 +39,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/ftimofeev/IdeaProjects/Hex",
     "onboarding.tips.debug.path": "C:/Users/ftimofeev/IdeaProjects/Hex/src/main/java/org/example/Main.java",
     "settings.editor.selected.configurable": "preferences.pluginManager"
   }
