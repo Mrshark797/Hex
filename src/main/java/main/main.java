@@ -1,6 +1,5 @@
 package main;
 
-import Model.TransformIntoHEX;
 import UI.Frame;
 
 public class main {
