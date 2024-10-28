@@ -3,6 +3,7 @@ package UI;
 import Model.TransformIntoHEX;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,8 +47,15 @@ public class Frame extends JFrame{
         panelForTable = new JPanel();
         panelForTable.setBackground(Color.GRAY);
 
-        Object[] columnsHead = new String[] {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F"};
-        JTable jTable = new JTable();
+        String[] columnsHead = new String[] {"00", "01", "02", "03"};
+        String[][] data = new String[][] {
+                {"00", "AA", "BB"},
+                {"01", "AB", "C1"},
+        };
+
+        DefaultTableModel model = new DefaultTableModel(data, columnsHead);
+        JTable jTable = new JTable(model);
+        panelForTable.add(jTable);
 
         panelForButtons = new JPanel();
         panelForButtons.setBackground(Color.GREEN);
@@ -75,7 +83,7 @@ public class Frame extends JFrame{
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(jSplitPane, BorderLayout.CENTER);
 
-        setSize(1000, 700);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
