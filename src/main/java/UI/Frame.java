@@ -46,6 +46,9 @@ public class Frame extends JFrame{
         panelForTable = new JPanel();
         panelForTable.setBackground(Color.GRAY);
 
+        Object[] columnsHead = new String[] {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F"};
+        JTable jTable = new JTable();
+
         panelForButtons = new JPanel();
         panelForButtons.setBackground(Color.GREEN);
 
@@ -77,4 +80,7 @@ public class Frame extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
+
+
+
 }
