@@ -17,7 +17,7 @@ public class TransformIntoHEX {
     /*
     Метод ниже создаёт массив из 16-чных строк
      */
-    public static List<String> getFileInHEX(File file){
+    public void getFileInHEX(File file /* JTable jTable*/){
         List<String> hexLines = new ArrayList<>();
         try(InputStream fis = Files.newInputStream(file.toPath())){
             byte[] buffer = new byte[16];
@@ -34,11 +34,10 @@ public class TransformIntoHEX {
             throw new RuntimeException(ex);
         }
         System.out.println(hexLines);
-        return hexLines;
     }
 
 
-    /*public void getFileInHEX(File file){
+    /* public void getFileInHEX(File file){
         try (InputStream fis = Files.newInputStream(file.toPath())) {
             while ((value = fis.read()) != -1) {
                 hex.append(String.format("%02X ", value));
