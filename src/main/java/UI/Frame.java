@@ -28,20 +28,6 @@ public class Frame extends JFrame{
         setJMenuBar(jMenuBar);
         jMenuBar.add(jMenu);
         jMenu.add(fileOpen);
-
-        fileOpen.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                fileChooser = new JFileChooser();
-                int ret = fileChooser.showOpenDialog(null);
-                if(ret == JFileChooser.APPROVE_OPTION){
-                    File file = fileChooser.getSelectedFile();
-                    TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
-                    transformIntoHEX.getFileInHEX(file);
-                }
-            }
-        });
-
         jMenu.add(fileSave);
 
         panelForTable = new JPanel();
@@ -82,6 +68,22 @@ public class Frame extends JFrame{
 
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(jSplitPane, BorderLayout.CENTER);
+
+        fileOpen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser = new JFileChooser();
+                int ret = fileChooser.showOpenDialog(null);
+                if(ret == JFileChooser.APPROVE_OPTION){
+                    File file = fileChooser.getSelectedFile();
+                    TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
+                    transformIntoHEX.getFileInHEX(file);
+
+                }
+            }
+        });
+
+
 
         setSize(1200, 800);
         setLocationRelativeTo(null);

@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c590752c-7b3d-490f-8586-ffc8e86f00ef" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Hex/UI/Frame.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Hex/UI/Frame.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Model/TransformIntoHEX.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Model/TransformIntoHEX.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/UI/Frame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/UI/Frame.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/main/main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/main/main.java" afterDir="false" />
     </list>

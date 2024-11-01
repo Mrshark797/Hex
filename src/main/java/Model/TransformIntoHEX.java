@@ -2,16 +2,43 @@ package Model;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransformIntoHEX {
-    private String UNKNOWN_CHARACTER = ".";
+    /* private String UNKNOWN_CHARACTER = ".";
     private StringBuilder hex = new StringBuilder();
     private StringBuilder result = new StringBuilder();
     private StringBuilder input = new StringBuilder();
     private int count = 0;
     private int value;
+    */
 
-    public void getFileInHEX(File file){
+    /*
+    Метод ниже создаёт массив из 16-чных строк
+     */
+    public static List<String> getFileInHEX(File file){
+        List<String> hexLines = new ArrayList<>();
+        try(InputStream fis = Files.newInputStream(file.toPath())){
+            byte[] buffer = new byte[16];
+            int bytesRead;
+            while((bytesRead = fis.read(buffer)) != -1){
+                StringBuilder hexLine = new StringBuilder();
+                for(int i = 0; i<bytesRead; i++){
+                    hexLine.append(String.format("%02X", buffer[i]));
+                    hexLines.add(hexLine.toString().trim());
+                }
+            }
+        }
+        catch(IOException ex){
+            throw new RuntimeException(ex);
+        }
+        System.out.println(hexLines);
+        return hexLines;
+    }
+
+
+    /*public void getFileInHEX(File file){
         try (InputStream fis = Files.newInputStream(file.toPath())) {
             while ((value = fis.read()) != -1) {
                 hex.append(String.format("%02X ", value));
@@ -39,12 +66,13 @@ public class TransformIntoHEX {
             throw new RuntimeException(ex);
         }
         System.out.println(result);
-
+        }
+        */
                     /*Метод выше позволяет открыть файл в консоли,
                      но НЕОБХОДИМО найти иной, дабы он открывался в окне приложения!!!
                      */
 
-    }
+
 }
 
 
