@@ -1,8 +1,13 @@
 package Model;
 
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 
 public class TransformIntoHEX {
@@ -17,7 +22,7 @@ public class TransformIntoHEX {
     /*
     Метод ниже создаёт массив из 16-чных строк
      */
-    public void getFileInHEX(File file /* JTable jTable*/){
+    public void getFileInHEX(File file, JTable jTable){
         List<String> hexLines = new ArrayList<>();
         try(InputStream fis = Files.newInputStream(file.toPath())){
             byte[] buffer = new byte[16];
@@ -34,7 +39,14 @@ public class TransformIntoHEX {
             throw new RuntimeException(ex);
         }
         System.out.println(hexLines);
+        DefaultTableModel md = new DefaultTableModel();
     }
+
+
+
+
+
+
 
 
     /* public void getFileInHEX(File file){

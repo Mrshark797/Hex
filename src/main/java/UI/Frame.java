@@ -33,15 +33,10 @@ public class Frame extends JFrame{
         panelForTable = new JPanel();
         panelForTable.setBackground(Color.GRAY);
 
-        String[] columnsHead = new String[] {"00", "01", "02", "03"};
-        String[][] data = new String[][] {
-                {"00", "AA", "BB"},
-                {"01", "AB", "C1"},
-        };
+        JTable jTable = new JTable();
+        DefaultTableModel md = new DefaultTableModel();
+        jTable.setModel(md);
 
-        DefaultTableModel model = new DefaultTableModel(data, columnsHead);
-        JTable jTable = new JTable(model);
-        panelForTable.add(jTable);
 
         panelForButtons = new JPanel();
         panelForButtons.setBackground(Color.GREEN);
@@ -77,7 +72,7 @@ public class Frame extends JFrame{
                 if(ret == JFileChooser.APPROVE_OPTION){
                     File file = fileChooser.getSelectedFile();
                     TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
-                    transformIntoHEX.getFileInHEX(file);
+                    transformIntoHEX.getFileInHEX(file, jTable);
 
                 }
             }
