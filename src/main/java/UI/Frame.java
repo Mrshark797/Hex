@@ -59,7 +59,7 @@ public class Frame extends JFrame{
 
 
         JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panelForTable, panelForButtons);
-        jSplitPane.setDividerLocation(650);
+        jSplitPane.setDividerLocation(850);
 
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(jSplitPane, BorderLayout.CENTER);
@@ -73,10 +73,12 @@ public class Frame extends JFrame{
                     File file = fileChooser.getSelectedFile();
                     TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
                     JTable table = transformIntoHEX.getFileInHEX(file); //  Получаем  JTable  из  getFileInHEX
+                    JScrollPane jsc = new JScrollPane(table);
+                    jsc.setPreferredSize(new Dimension(700, 500));
 
                     //  Добавляем  JTable  в  panelForTable
                     panelForTable.removeAll(); //  Очищаем  panelForTable
-                    panelForTable.add(new JScrollPane(table));
+                    panelForTable.add(jsc);
                     panelForTable.revalidate();
                     panelForTable.repaint();
                 }
@@ -86,7 +88,7 @@ public class Frame extends JFrame{
 
 
 
-        setSize(1200, 800);
+        setSize(1200, 750);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);

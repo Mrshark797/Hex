@@ -1,14 +1,10 @@
 package Model;
 
 import javax.swing.*;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 
 public class TransformIntoHEX {
