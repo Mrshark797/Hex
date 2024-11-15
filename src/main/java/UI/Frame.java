@@ -69,14 +69,20 @@ public class Frame extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 fileChooser = new JFileChooser();
                 int ret = fileChooser.showOpenDialog(null);
-                if(ret == JFileChooser.APPROVE_OPTION){
+                if (ret == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                     TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
-                    transformIntoHEX.getFileInHEX(file, jTable);
+                    JTable table = transformIntoHEX.getFileInHEX(file); //  Получаем  JTable  из  getFileInHEX
 
+                    //  Добавляем  JTable  в  panelForTable
+                    panelForTable.removeAll(); //  Очищаем  panelForTable
+                    panelForTable.add(new JScrollPane(table));
+                    panelForTable.revalidate();
+                    panelForTable.repaint();
                 }
             }
         });
+
 
 
 

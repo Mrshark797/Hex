@@ -1,6 +1,7 @@
 package Model;
 
 import javax.swing.*;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
@@ -22,25 +23,33 @@ public class TransformIntoHEX {
     /*
     Метод ниже создаёт массив из 16-чных строк
      */
-    public void getFileInHEX(File file, JTable jTable){
+    public JTable getFileInHEX(File file) {
         List<String> hexLines = new ArrayList<>();
-        try(InputStream fis = Files.newInputStream(file.toPath())){
+        try (InputStream fis = Files.newInputStream(file.toPath())) {
             byte[] buffer = new byte[16];
             int bytesRead;
-            while((bytesRead = fis.read(buffer)) != -1){
+            while ((bytesRead = fis.read(buffer)) != -1) {
                 StringBuilder hexLine = new StringBuilder();
-                for(int i = 0; i<bytesRead; i++){
-                    hexLine.append(String.format("%02X", buffer[i]));
-                    hexLines.add(hexLine.toString().trim());
+                for (int i = 0; i < bytesRead; i++) {
+                    hexLine.append(String.format("%02X ", buffer[i]));
                 }
+                hexLines.add(hexLine.toString().trim()); //  Добавляем  строку  в  список
             }
-        }
-        catch(IOException ex){
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        System.out.println(hexLines);
-        DefaultTableModel md = new DefaultTableModel();
+
+        //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("HEX");
+        for (String hexValue : hexLines) {
+            model.addRow(new Object[]{hexValue});
+        }
+        JTable table = new JTable(model);
+        return table;
     }
+
+
 
 
 
