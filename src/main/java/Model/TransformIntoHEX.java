@@ -20,16 +20,16 @@ public class TransformIntoHEX {
     Метод ниже создаёт массив из 16-чных строк
      */
     public JTable getFileInHEX(File file) {
-        List<String> hexLines = new ArrayList<>();
+        List<String[]> hexLines = new ArrayList<>();
         try (InputStream fis = Files.newInputStream(file.toPath())) {
             byte[] buffer = new byte[16];
             int bytesRead;
             while ((bytesRead = fis.read(buffer)) != -1) {
-                StringBuilder hexLine = new StringBuilder();
+                String[] hexRow = new String[bytesRead]; //  Создаем  массив  для  строки  таблицы
                 for (int i = 0; i < bytesRead; i++) {
-                    hexLine.append(String.format("%02X ", buffer[i]));
+                    hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
                 }
-                hexLines.add(hexLine.toString().trim()); //  Добавляем  строку  в  список
+                hexLines.add(hexRow); //  Добавляем  массив  в  список
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -37,9 +37,12 @@ public class TransformIntoHEX {
 
         //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("HEX");
-        for (String hexValue : hexLines) {
-            model.addRow(new Object[]{hexValue});
+        //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
+        for (int i = 0; i < hexLines.get(0).length; i++) {
+            model.addColumn("HEX" + (i + 1));
+        }
+        for (String[] hexRow : hexLines) {
+            model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
         }
         JTable table = new JTable(model);
         return table;
