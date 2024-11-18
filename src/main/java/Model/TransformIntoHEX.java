@@ -39,7 +39,12 @@ public class TransformIntoHEX {
         DefaultTableModel model = new DefaultTableModel();
         //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
         for (int i = 0; i < hexLines.get(0).length; i++) {
-            model.addColumn("HEX" + (i + 1));
+            if(i<=9){
+                model.addColumn("0" + i);
+            }
+            else{
+                model.addColumn("0" + Integer.toHexString(i));
+            }
         }
         for (String[] hexRow : hexLines) {
             model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
