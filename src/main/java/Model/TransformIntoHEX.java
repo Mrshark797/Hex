@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TransformIntoHEX {
@@ -39,12 +40,7 @@ public class TransformIntoHEX {
         DefaultTableModel model = new DefaultTableModel();
         //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
         for (int i = 0; i < hexLines.get(0).length; i++) {
-            if(i<=9){
-                model.addColumn("0" + i);
-            }
-            else{
-                model.addColumn("0" + Integer.toHexString(i));
-            }
+            model.addColumn("0" + Integer.toHexString(i));
         }
         for (String[] hexRow : hexLines) {
             model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
