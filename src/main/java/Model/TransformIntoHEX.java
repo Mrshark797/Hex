@@ -4,9 +4,11 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.nio.file.Files;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 public class TransformIntoHEX {
     /* private String UNKNOWN_CHARACTER = ".";
@@ -18,7 +20,7 @@ public class TransformIntoHEX {
     */
 
     /*
-    Метод ниже создаёт массив из 16-чных строк
+    Метод ниже создаёт таблицу и размещает в ней 16-ые данные в каждой ячейке
      */
     public JTable getFileInHEX(File file) {
         List<String[]> hexLines = new ArrayList<>();
@@ -30,7 +32,8 @@ public class TransformIntoHEX {
                 for (int i = 0; i < bytesRead; i++) {
                     hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
                 }
-                hexLines.add(hexRow); //  Добавляем  массив  в  список
+                hexLines.add(hexRow);
+                //  Добавляем  массив  в  список
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -39,23 +42,25 @@ public class TransformIntoHEX {
         //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
         DefaultTableModel model = new DefaultTableModel();
         //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
+        model.addColumn("");
         for (int i = 0; i < hexLines.get(0).length; i++) {
-            model.addColumn("0" + Integer.toHexString(i));
-        }
-        for (String[] hexRow : hexLines) {
+                model.addColumn("0" + Integer.toHexString(i));
+            }
+
+        for(String[] hexRow : hexLines){
             model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
         }
+        /* код ниже имеет деффект. Левая колонка криво заполняется, вторая колонка заполняется ерундой, а остальные остаются вовсе пустыми
+        for (String[] hexRow : hexLines) {
+            for (int i = 0; i < hexLines.get(0).length;i++) {
+                model.addRow(new Object[]{String.format("%08d", i), hexRow}); //  Добавляем  массив  в  строку  таблицы
+            }
+        }
+        */
+
         JTable table = new JTable(model);
         return table;
     }
-
-
-
-
-
-
-
-
 
 
     /* public void getFileInHEX(File file){
@@ -91,8 +96,4 @@ public class TransformIntoHEX {
                     /*Метод выше позволяет открыть файл в консоли,
                      но НЕОБХОДИМО найти иной, дабы он открывался в окне приложения!!!
                      */
-
-
 }
-
-
