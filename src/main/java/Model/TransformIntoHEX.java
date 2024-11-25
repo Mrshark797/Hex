@@ -33,14 +33,15 @@ public class TransformIntoHEX {
             */
             while ((bytesRead = fis.read(buffer)) != -1) {
                 String[] hexRow = new String[bytesRead]; //  Создаем  массив  для  строки  таблицы
-                for (int i = 0; i < bytesRead; i++) {
-                    if(i==0){
-                        hexRow[i] = String.format("%07X", bytesRead/16).trim()+"0";
-                    }
-                    else{
-                        hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
-                    }
+                for (int i = 1; i < bytesRead; i++) {
+                    hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
+
                 }
+                for (int i = 0; i < bytesRead; i++) {
+                    hexRow[0] = String.format("%07X", i).trim()+"0";
+
+                }
+
                 hexLines.add(hexRow);
                 //  Добавляем  массив  в  список
             }
