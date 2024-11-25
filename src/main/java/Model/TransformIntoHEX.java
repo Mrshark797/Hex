@@ -4,11 +4,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.nio.file.Files;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
+
 
 public class TransformIntoHEX {
     /* private String UNKNOWN_CHARACTER = ".";
@@ -30,7 +28,12 @@ public class TransformIntoHEX {
             while ((bytesRead = fis.read(buffer)) != -1) {
                 String[] hexRow = new String[bytesRead]; //  Создаем  массив  для  строки  таблицы
                 for (int i = 0; i < bytesRead; i++) {
-                    hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
+                    if(i==0){
+                        hexRow[i] = String.format("%07X", i).trim()+"0";
+                    }
+                    else{
+                        hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
+                    }
                 }
                 hexLines.add(hexRow);
                 //  Добавляем  массив  в  список
@@ -42,21 +45,19 @@ public class TransformIntoHEX {
         //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
         DefaultTableModel model = new DefaultTableModel();
         //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
-        model.addColumn("");
+
         for (int i = 0; i < hexLines.get(0).length; i++) {
-                model.addColumn("0" + Integer.toHexString(i));
+                if(i == 0){
+                    model.addColumn("");
+                }
+                else{
+                    model.addColumn("0" + Integer.toHexString(i));
+                }
             }
 
         for(String[] hexRow : hexLines){
             model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
         }
-        /* код ниже имеет деффект. Левая колонка криво заполняется, вторая колонка заполняется ерундой, а остальные остаются вовсе пустыми
-        for (String[] hexRow : hexLines) {
-            for (int i = 0; i < hexLines.get(0).length;i++) {
-                model.addRow(new Object[]{String.format("%08d", i), hexRow}); //  Добавляем  массив  в  строку  таблицы
-            }
-        }
-        */
 
         JTable table = new JTable(model);
         return table;
