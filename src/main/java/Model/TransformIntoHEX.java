@@ -25,11 +25,17 @@ public class TransformIntoHEX {
         try (InputStream fis = Files.newInputStream(file.toPath())) {
             byte[] buffer = new byte[16];
             int bytesRead;
+            /*
+            Метод read(buffer) считывает в массив buffer из потока символов fis (которые берётся из выбранного файла),
+            количество которых равно длине массива buffer.
+            Возвращает количество успешно считанных символов.
+            При достижении конца файла возвращает -1.
+            */
             while ((bytesRead = fis.read(buffer)) != -1) {
                 String[] hexRow = new String[bytesRead]; //  Создаем  массив  для  строки  таблицы
                 for (int i = 0; i < bytesRead; i++) {
                     if(i==0){
-                        hexRow[i] = String.format("%07X", i).trim()+"0";
+                        hexRow[i] = String.format("%07X", bytesRead/16).trim()+"0";
                     }
                     else{
                         hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
