@@ -47,7 +47,13 @@ public class TransformIntoHEX {
         }
 
         //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
-        DefaultTableModel model = new DefaultTableModel();
+        DefaultTableModel model = new DefaultTableModel(){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column > 0;
+            }
+        };
+
         //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
 
         for (int i = 0; i < hexLines.get(0).length; i++) {
