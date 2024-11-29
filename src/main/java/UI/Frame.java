@@ -74,7 +74,7 @@ public class Frame extends JFrame{
                     TransformIntoHEX transformIntoHEX = new TransformIntoHEX();
                     JTable table = transformIntoHEX.getFileInHEX(file); //  Получаем  JTable  из  getFileInHEX
                     JScrollPane jsc = new JScrollPane(table);
-                    jsc.setPreferredSize(new Dimension(700, 500));
+                    jsc.setPreferredSize(new Dimension(800, 600));
 
                     //  Добавляем  JTable  в  panelForTable
                     panelForTable.removeAll(); //  Очищаем  panelForTable
