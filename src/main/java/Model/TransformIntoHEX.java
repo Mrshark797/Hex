@@ -23,8 +23,9 @@ public class TransformIntoHEX {
     public JTable getFileInHEX(File file) {
         List<String[]> hexLines = new ArrayList<>();
         try (InputStream fis = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[16];
+            byte[] buffer = new byte[15];
             int bytesRead;
+            int lineNumber = 0;
             /*
             Метод read(buffer) считывает в массив buffer из потока символов fis (которые берётся из выбранного файла),
             количество которых равно длине массива buffer.
@@ -32,16 +33,12 @@ public class TransformIntoHEX {
             При достижении конца файла возвращает -1.
             */
             while ((bytesRead = fis.read(buffer)) != -1) {
-                String[] hexRow = new String[bytesRead]; //  Создаем  массив  для  строки  таблицы
-                for (int i = 1; i < bytesRead; i++) {
-                    hexRow[i] = String.format("%02X ", buffer[i]).trim(); //  Добавляем  16-ричное  значение  в  массив
-
-                }
+                String[] hexRow = new String[bytesRead + 1]; //  Создаем  массив  для  строки  таблицы
+                hexRow[0] = String.format("%07X", lineNumber++)+"0";
                 for (int i = 0; i < bytesRead; i++) {
-                    hexRow[0] = String.format("%07X", i).trim()+"0";
+                    hexRow[i+1] = String.format("%02X ", buffer[i]); //  Добавляем  16-ричное  значение  в  массив
 
                 }
-
                 hexLines.add(hexRow);
                 //  Добавляем  массив  в  список
             }
