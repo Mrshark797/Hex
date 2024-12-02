@@ -84,8 +84,13 @@ public class Frame extends JFrame{
                 }
             }
         });
-
-
+        fileSave.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser = new JFileChooser();
+                int ret = fileChooser.showSaveDialog(null);
+            }
+        });
 
 
         setSize(1200, 750);
@@ -93,7 +98,4 @@ public class Frame extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
     }
-
-
-
 }
