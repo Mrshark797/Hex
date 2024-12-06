@@ -23,7 +23,7 @@ public class TransformIntoHEX {
     public JTable getFileInHEX(File file) {
         List<String[]> hexLines = new ArrayList<>();
         try (InputStream fis = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[15];
+            byte[] buffer = new byte[16];
             int bytesRead;
             int lineNumber = 0;
             /*
@@ -61,7 +61,7 @@ public class TransformIntoHEX {
                     model.addColumn("");
                 }
                 else{
-                    model.addColumn("0" + Integer.toHexString(i));
+                    model.addColumn("0" + Integer.toHexString(i-1));
                 }
             }
 
