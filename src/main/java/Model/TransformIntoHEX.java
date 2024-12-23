@@ -1,110 +1,70 @@
 package Model;
 
-import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.io.*;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class TransformIntoHEX {
-    /* private String UNKNOWN_CHARACTER = ".";
-    private StringBuilder hex = new StringBuilder();
-    private StringBuilder result = new StringBuilder();
-    private StringBuilder input = new StringBuilder();
-    private int count = 0;
-    private int value;
-    */
+    public byte[] pageBuffer;
+    private static final int BYTES_PER_ROW = 16;
+    private static final int PAGE_SIZE = 256;
 
-    /*
-    Метод ниже создаёт таблицу и размещает в ней 16-ые данные в каждой ячейке
-     */
-    public JTable getFileInHEX(File file) {
-        List<String[]> hexLines = new ArrayList<>();
-        try (InputStream fis = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[16];
-            int bytesRead;
-            int lineNumber = 0;
-            /*
-            Метод read(buffer) считывает в массив buffer из потока символов fis (которые берётся из выбранного файла),
-            количество которых равно длине массива buffer.
-            Возвращает количество успешно считанных символов.
-            При достижении конца файла возвращает -1.
-            */
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                String[] hexRow = new String[bytesRead + 1]; //  Создаем  массив  для  строки  таблицы
-                hexRow[0] = String.format("%07X", lineNumber++)+"0";
-                for (int i = 0; i < bytesRead; i++) {
-                    hexRow[i+1] = String.format("%02X ", buffer[i]); //  Добавляем  16-ричное  значение  в  массив
 
-                }
-                hexLines.add(hexRow);
-                //  Добавляем  массив  в  список
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+    public DefaultTableModel getHexPage(File file, int pageNumber) throws IOException {
+        long offset = (long) pageNumber * PAGE_SIZE;
+        long limit = Math.min(offset + PAGE_SIZE, file.length());
+
+        if (offset >= file.length()) {
+            return null;
         }
 
-        //  Создаем  DefaultTableModel  и  JTable  с  помощью  hexLines
-        DefaultTableModel model = new DefaultTableModel(){
+        byte[] buffer = new byte[(int) (limit - offset)];
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            raf.seek(offset);
+            raf.readFully(buffer);
+        }
+        pageBuffer = buffer;
+
+        DefaultTableModel model = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column > 0;
             }
         };
 
-        //  Добавляем  заголовки  столбцов  (по  количеству  байтов  в  строке)
+        model.addColumn("00000000");
 
-        for (int i = 0; i < hexLines.get(0).length; i++) {
-                if(i == 0){
-                    model.addColumn("");
-                }
-                else{
-                    model.addColumn("0" + Integer.toHexString(i-1));
-                }
-            }
-
-        for(String[] hexRow : hexLines){
-            model.addRow(hexRow); //  Добавляем  массив  в  строку  таблицы
+        for (int i = 0; i < BYTES_PER_ROW; i++) {
+            model.addColumn(String.format("%02X", i));
         }
 
-        JTable table = new JTable(model);
-        return table;
+
+        int lines = (buffer.length + 15) / BYTES_PER_ROW;
+        int address = (int) offset;
+        for (int i = 0; i < lines; i++) {
+            String[] row = new String[BYTES_PER_ROW + 1];
+            row[0] = String.format("%08X", address);
+            for (int j = 0; j < BYTES_PER_ROW && address < limit; j++) {
+                int bufferIndex = address - (int)offset + j;
+                if(bufferIndex >= 0 && bufferIndex < buffer.length){
+                    row[j + 1] = String.format("%02X", buffer[bufferIndex]);
+                    address++;
+                } else {
+                    break;
+                }
+            }
+            model.addRow(row);
+        }
+        return model;
     }
-
-
-    /* public void getFileInHEX(File file){
-        try (InputStream fis = Files.newInputStream(file.toPath())) {
-            while ((value = fis.read()) != -1) {
-                hex.append(String.format("%02X ", value));
-
-                if (!Character.isISOControl(value)) {
-                    input.append((char) value);
-                } else {
-                    input.append(UNKNOWN_CHARACTER);
-                }
-
-                if (count == 15) {
-                    result.append(String.format("%-60s | %s%n", hex, input));
-                    hex.setLength(0);
-                    input.setLength(0);
-                    count = 0;
-                } else {
-                    count++;
-                }
-            }
-
-            if (count > 0) {
-                result.append(String.format("%-60s | %s%n", hex, input));
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+    public byte[] hexToBytes(String hex) {
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i + 1), 16));
         }
-        System.out.println(result);
-        }
-        */
-                    /*Метод выше позволяет открыть файл в консоли,
-                     но НЕОБХОДИМО найти иной, дабы он открывался в окне приложения!!!
-                     */
+        return data;
+    }
 }
