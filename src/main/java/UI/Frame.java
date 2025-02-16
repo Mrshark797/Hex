@@ -2,12 +2,13 @@ package UI;
 
 import Model.TransformIntoHEX;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -23,6 +24,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+
 
 
 public class Frame extends JFrame {
@@ -172,9 +174,12 @@ public class Frame extends JFrame {
 
         panelForTable.add(new JScrollPane(hexTable), BorderLayout.CENTER);
         addTableModelListener(hexTable);
-        hexTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                displaySelectedData();
+        hexTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    displaySelectedData();
+                }
             }
         });
 
@@ -259,27 +264,61 @@ public class Frame extends JFrame {
     private void displaySelectedData() {
         int selectedRow = hexTable.getSelectedRow();
         int selectedCol = hexTable.getSelectedColumn();
+
         if (selectedRow == -1 || selectedCol <= 0) {
+            dataValueLabel.setText("Value: -");
             return;
         }
-        int address = Integer.parseInt(hexTable.getModel().getValueAt(selectedRow, 0).toString(), 16);
-        int offset = address + selectedCol - 1;
+
+        TableModel model = hexTable.getModel();
         try {
-            byte[] data = getBytesFromOffset(offset);
-            if (data == null) {
-                dataValueLabel.setText("Value: -");
-                return;
-            }
+            int address = Integer.parseInt(model.getValueAt(selectedRow, 0).toString(), 16);
+            int offset = address + selectedCol - 1;
+
+            // Получаем выбранный тип данных
             String selectedType = (String) dataTypeComboBox.getSelectedItem();
-            if (selectedType != null) {
-                Object value = interpretData(data, selectedType);
-                dataValueLabel.setText("Value: " + value);
+
+            String valueString = ""; // Строка для отображения значений
+
+            // Сначала добавляем значение для выбранного типа данных (2, 4, или 8 байт)
+            if (selectedType != null && !selectedType.isEmpty()) {
+                byte[] data = getBytesFromOffset(offset);
+                if (data == null) {
+                    valueString = "Not enough data for " + selectedType + ", ";
+                } else {
+                    Object interpretedValue = interpretData(data, selectedType);
+                    if (interpretedValue != null) {
+                        valueString = selectedType + ": " + interpretedValue + ", ";
+                    } else {
+                        valueString = "Error interpreting " + selectedType + ", ";
+                    }
+                }
             }
-        } catch (Exception e) {
+
+            // Теперь добавляем десятичные значения со знаком и без знака (для 1 байта)
+            byte selectedByte = getByteFromTable(selectedRow, selectedCol);
+            int signedDecimal = (int) selectedByte;
+            int unsignedDecimal = selectedByte & 0xFF;
+
+            valueString += "Value (signed): " + signedDecimal + ", Value (unsigned): " + unsignedDecimal;
+
+            dataValueLabel.setText(valueString);
+
+        } catch (NumberFormatException e) {
             dataValueLabel.setText("Value: Error");
+            e.printStackTrace();
+        } catch (Exception e) {
+            dataValueLabel.setText("Value: General Error");
             e.printStackTrace();
         }
     }
+
+    private byte getByteFromTable(int row, int col) {
+        TableModel model = hexTable.getModel();
+        String hexValue = (String) model.getValueAt(row, col);
+        return (byte) Integer.parseInt(hexValue, 16);
+    }
+
     private byte[] getBytesFromOffset(int offset) throws IOException {
         if (file == null) {
             return null;
@@ -313,48 +352,48 @@ public class Frame extends JFrame {
         }
         return buffer;
     }
-    private Object interpretData(byte[] data, String type) {
+    public Object interpretData(byte[] data, String type) {
         if (data == null || data.length == 0) {
-            return "-";
+            return null; // Возвращаем null, если нет данных
         }
         ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
         try {
             switch (type) {
                 case "Int16 (signed 2 bytes)":
-                    if (data.length < 2) return "Not enough bytes";
+                    if (data.length < 2) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getShort();
                 case "UInt16 (unsigned 2 bytes)":
-                    if (data.length < 2) return "Not enough bytes";
+                    if (data.length < 2) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getShort() & 0xFFFF;
                 case "Int32 (signed 4 bytes)":
-                    if (data.length < 4) return "Not enough bytes";
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getInt();
                 case "UInt32 (unsigned 4 bytes)":
-                    if (data.length < 4) return "Not enough bytes";
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getInt() & 0xFFFFFFFFL;
                 case "Float (4 bytes)":
-                    if (data.length < 4) return "Not enough bytes";
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getFloat();
                 case "Int64 (signed 8 bytes)":
-                    if (data.length < 8) return "Not enough bytes";
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getLong();
                 case "UInt64 (unsigned 8 bytes)":
-                    if (data.length < 8) return "Not enough bytes";
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getLong() & 0xFFFFFFFFFFFFFFFFL;
                 case "Double (8 bytes)":
-                    if (data.length < 8) return "Not enough bytes";
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
                     return buffer.getDouble();
+                default:
+                    return null; // Возвращаем null, если тип неизвестен
             }
         } catch (BufferUnderflowException e) {
-            return "Not enough bytes";
-        }
-        catch (Exception e) {
+            return null; // Возвращаем null, если недостаточно данных
+        } catch (Exception e) {
             e.printStackTrace();
-            return "Error";
+            return null; // Возвращаем null в случае ошибки
         }
-        return "Unknown type";
     }
-    private void showPage(int pageNumber) {
+    public void showPage(int pageNumber) {
         try {
             DefaultTableModel model = transformIntoHEX.getHexPage(file, pageNumber);
             if (model == null) {
@@ -394,7 +433,7 @@ public class Frame extends JFrame {
             }
         });
     }
-    private void updatePageBuffer(int row, int col, String newValue) {
+    public void updatePageBuffer(int row, int col, String newValue) {
         if (col <= 0 || col >= hexTable.getColumnCount()) {
             return;  // Ничего не делаем, если столбец некорректен
         }
@@ -408,12 +447,19 @@ public class Frame extends JFrame {
 
             // Записываем байт в файл в отдельном потоке
             new Thread(() -> {
-                try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-                    raf.seek(address);
-                    raf.writeByte(newByte);
-                    System.out.println("updatePageBuffer: Записан байт " + String.format("%02X", newByte) + " по адресу " + address);
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(Frame.this, "Ошибка записи в файл: " + ex.getMessage());
+                try {
+                    try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+                        System.out.println("Файл открыт для записи: " + file.getAbsolutePath());
+                        raf.seek(address);
+                        System.out.println("Указатель файла установлен на адрес: " + address);
+                        raf.writeByte(newByte);
+                        System.out.println("Записан байт " + String.format("%02X", newByte) + " по адресу " + address);
+                    } catch (IOException ex) {
+                        System.out.println("Ошибка записи в файл: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Ошибка в потоке: " + ex.getMessage());
                     ex.printStackTrace();
                 }
             }).start();
@@ -851,7 +897,7 @@ public class Frame extends JFrame {
         hexTable.setModel(newModel);
     }
 
-    private int getCurrentPage() {
+    public int getCurrentPage() {
         try {
             int firstAddress = Integer.parseInt(hexTable.getModel().getValueAt(0, 0).toString(), 16);
             return firstAddress / PAGE_SIZE;
