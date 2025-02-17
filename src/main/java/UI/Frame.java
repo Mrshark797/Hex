@@ -314,25 +314,99 @@ public class Frame extends JFrame {
         return (byte) Integer.parseInt(hexValue, 16);
     }
 
-    private void showPage(int pageNumber) {
+    private byte[] getBytesFromOffset(int offset) throws IOException {
+        if (file == null) {
+            return null;
+        }
+        long fileLength = file.length();
+        if (offset < 0 || offset >= fileLength) {
+            return null;
+        }
+        int bytesToRead = 0;
+        String selectedType = (String) dataTypeComboBox.getSelectedItem();
+        if (selectedType != null) {
+            if (selectedType.contains("2 bytes")) {
+                bytesToRead = 2;
+            } else if (selectedType.contains("4 bytes")) {
+                bytesToRead = 4;
+            } else if (selectedType.contains("8 bytes")) {
+                bytesToRead = 8;
+            }
+        }
+
+        long remainingBytes = fileLength - offset;
+        bytesToRead = (int) Math.min(bytesToRead, remainingBytes);
+
+        if (bytesToRead <= 0) {
+            return null;
+        }
+        byte[] buffer = new byte[bytesToRead];
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+            raf.seek(offset);
+            raf.readFully(buffer);
+        }
+        return buffer;
+    }
+
+    public Object interpretData(byte[] data, String type) {
+        if (data == null || data.length == 0) {
+            return null; // Возвращаем null, если нет данных
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+        try {
+            switch (type) {
+                case "Int16 (signed 2 bytes)":
+                    if (data.length < 2) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getShort();
+                case "UInt16 (unsigned 2 bytes)":
+                    if (data.length < 2) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getShort() & 0xFFFF;
+                case "Int32 (signed 4 bytes)":
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getInt();
+                case "UInt32 (unsigned 4 bytes)":
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getInt() & 0xFFFFFFFFL;
+                case "Float (4 bytes)":
+                    if (data.length < 4) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getFloat();
+                case "Int64 (signed 8 bytes)":
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getLong();
+                case "UInt64 (unsigned 8 bytes)":
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getLong() & 0xFFFFFFFFFFFFFFFFL;
+                case "Double (8 bytes)":
+                    if (data.length < 8) return null; // Возвращаем null, если недостаточно данных
+                    return buffer.getDouble();
+                default:
+                    return null; // Возвращаем null, если тип неизвестен
+            }
+        } catch (BufferUnderflowException e) {
+            return null; // Возвращаем null, если недостаточно данных
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null; // Возвращаем null в случае ошибки
+        }
+    }
+
+
+
+    public void showPage(int pageNumber) {
         try {
             DefaultTableModel model = transformIntoHEX.getHexPage(file, pageNumber);
             if (model == null) {
                 JOptionPane.showMessageDialog(this, "Страница не найдена!");
                 return;
             }
+            System.out.println("showPage: Модель таблицы создана");
+            hexTable.setModel(model);
+            System.out.println("showPage: Модель установлена в JTable");
+            addTableModelListener(hexTable);
+            System.out.println("showPage: Слушатель добавлен к таблице");
             currentPage = pageNumber;
-            pageTextField.setText(String.valueOf(currentPage + 1)); // Номер страницы с 1
-            if (hexTable == null) {
-                hexTable = new JTable(model);
-                addTableModelListener(hexTable);
-                panelForTable.add(new JScrollPane(hexTable), BorderLayout.CENTER);
-                panelForTable.revalidate();
-                panelForTable.repaint();
-            } else {
-                hexTable.setModel(model);
-                hexTable.repaint();
-            }
+            pageTextField.setText(String.valueOf(currentPage + 1));
+            hexTable.repaint();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Ошибка загрузки страницы: " + ex.getMessage());
         }
@@ -342,10 +416,13 @@ public class Frame extends JFrame {
         table.getModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
+                System.out.println("tableChanged: Событие произошло"); // Добавлен лог
                 if (e.getType() == TableModelEvent.UPDATE) {
+                    System.out.println("tableChanged: Обновление ячейки"); // Добавлен лог
                     int row = e.getFirstRow();
                     int col = e.getColumn();
-                    String newValue = (String) hexTable.getModel().getValueAt(row, col);
+                    DefaultTableModel model = (DefaultTableModel) e.getSource();
+                    String newValue = (String) model.getValueAt(row, col);
                     try {
                         updatePageBuffer(row, col, newValue);
                     } catch (Exception ex) {
@@ -356,17 +433,62 @@ public class Frame extends JFrame {
         });
     }
 
-    private void updatePageBuffer(int row, int col, String newValue) {
+    public void updatePageBuffer(int row, int col, String newValue) {
+        if (col <= 0 || col >= hexTable.getColumnCount()) {
+            return;  // Ничего не делаем, если столбец некорректен
+        }
         try {
-            if (col > 0) {
-                int address = Integer.parseInt(hexTable.getModel().getValueAt(row, 0).toString(), 16) + col -1;
-                byte[] bytes = transformIntoHEX.hexToBytes(newValue);
-                if (bytes.length > 0) {
-                    System.arraycopy(bytes, 0, transformIntoHEX.pageBuffer, address - (currentPage * pageSize), bytes.length);
+            int address = Integer.parseInt(hexTable.getModel().getValueAt(row, 0).toString(), 16) + col-1;
+            System.out.println("updatePageBuffer: Адрес (десятичный): " + address);
+            System.out.println("updatePageBuffer: Адрес (шестнадцатеричный): " + String.format("%08X", address));
+
+            // Преобразуем новое значение в байт
+            byte newByte = (byte) Integer.parseInt(newValue, 16);
+
+            // Записываем байт в файл в отдельном потоке
+            new Thread(() -> {
+                try {
+                    try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+                        System.out.println("Файл открыт для записи: " + file.getAbsolutePath());
+                        raf.seek(address);
+                        System.out.println("Указатель файла установлен на адрес: " + address);
+                        raf.writeByte(newByte);
+                        System.out.println("Записан байт " + String.format("%02X", newByte) + " по адресу " + address);
+                    } catch (IOException ex) {
+                        System.out.println("Ошибка записи в файл: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Ошибка в потоке: " + ex.getMessage());
+                    ex.printStackTrace();
                 }
-            }
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-            JOptionPane.showMessageDialog(this, "Ошибка обновления буфера: " + ex.getMessage());
+            }).start();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(Frame.this, "Неверный формат числа: " + ex.getMessage());
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(Frame.this, "Ошибка обновления буфера: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
+
+    private void highlightSearchResults(List<Long> results) {
+        if (results == null || results.isEmpty() || hexTable.getModel() == null) {
+            return;
+        }
+        hexTable.clearSelection();
+        for (long result : results) {
+            int pageNumber = (int) (result / PAGE_SIZE);
+            if (pageNumber == currentPage) {
+                int offsetInPage = (int) (result % PAGE_SIZE);
+                int row = offsetInPage / BYTES_PER_ROW;
+                int col = offsetInPage % BYTES_PER_ROW + 1;
+                hexTable.addRowSelectionInterval(row, row);
+                hexTable.addColumnSelectionInterval(col, col);
+            }
+        }
+    }
+
+
 }
