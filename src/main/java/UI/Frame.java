@@ -206,6 +206,7 @@ public class Frame extends JFrame {
         setVisible(true);
     }
 
+    //Открытие файла
     private void openFile() {
         int returnVal = fileChooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -214,6 +215,7 @@ public class Frame extends JFrame {
         }
     }
 
+    //Сохранение файла
     private void saveFileAs() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Save As");
@@ -256,6 +258,7 @@ public class Frame extends JFrame {
         }
     }
 
+    //Вывод значений
     private void displaySelectedData() {
         int selectedRow = hexTable.getSelectedRow();
         int selectedCol = hexTable.getSelectedColumn();
@@ -292,7 +295,7 @@ public class Frame extends JFrame {
 
             // Теперь добавляем десятичные значения со знаком и без знака (для 1 байта)
             byte selectedByte = getByteFromTable(selectedRow, selectedCol);
-            int signedDecimal = (int) selectedByte;
+            int signedDecimal = selectedByte;
             int unsignedDecimal = selectedByte & 0xFF;
 
             valueString += "Value (signed): " + signedDecimal + ", Value (unsigned): " + unsignedDecimal;
@@ -348,6 +351,7 @@ public class Frame extends JFrame {
         return buffer;
     }
 
+    // Выбор 2, 4 и 8 байта
     public Object interpretData(byte[] data, String type) {
         if (data == null || data.length == 0) {
             return null; // Возвращаем null, если нет данных
@@ -390,8 +394,7 @@ public class Frame extends JFrame {
         }
     }
 
-
-
+    //Вывод страницы в виде таблицы
     public void showPage(int pageNumber) {
         try {
             DefaultTableModel model = transformIntoHEX.getHexPage(file, pageNumber);
@@ -490,6 +493,7 @@ public class Frame extends JFrame {
         }
     }
 
+    // Удаление выбранных байтов с заменой на нули
     private void deleteSelectedBytesWithZeroing() {
         int[] selectedRows = hexTable.getSelectedRows();
         int[] selectedColumns = hexTable.getSelectedColumns();
@@ -579,6 +583,7 @@ public class Frame extends JFrame {
         updateTableData();
     }
 
+    //Удаление выбранных байтов со сдвигом
     private void deleteSelectedBytesWithShift() {
         int[] selectedRows = hexTable.getSelectedRows();
         int[] selectedColumns = hexTable.getSelectedColumns();
@@ -633,6 +638,7 @@ public class Frame extends JFrame {
         updateTableData();
     }
 
+    //Вставка байтов без замены
     private void insertBytesWithoutReplace() {
         int selectedRow = hexTable.getSelectedRow();
         int selectedColumn = hexTable.getSelectedColumn();
@@ -702,6 +708,7 @@ public class Frame extends JFrame {
         updateTableData();
     }
 
+    //Копирование выделенных байтов
     private void copySelectedBytes() {
         int[] selectedRows = hexTable.getSelectedRows();
         int[] selectedColumns = hexTable.getSelectedColumns();
@@ -729,6 +736,7 @@ public class Frame extends JFrame {
         }
     }
 
+    //Вырезка выделенных байтов
     private void cutSelectedBytes() {
         int[] selectedRows = hexTable.getSelectedRows();
         int[] selectedColumns = hexTable.getSelectedColumns();
@@ -768,6 +776,7 @@ public class Frame extends JFrame {
         updateTableData();
     }
 
+    //Вставка байтов
     private void pasteBytes() {
         int selectedRow = hexTable.getSelectedRow();
         int selectedColumn = hexTable.getSelectedColumn();
