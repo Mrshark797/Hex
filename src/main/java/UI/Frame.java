@@ -768,5 +768,142 @@ public class Frame extends JFrame {
         updateTableData();
     }
 
+    private void pasteBytes() {
+        int selectedRow = hexTable.getSelectedRow();
+        int selectedColumn = hexTable.getSelectedColumn();
 
+        if (selectedRow == -1 || selectedColumn <= 0) {
+            JOptionPane.showMessageDialog(this, "Выделите ячейку для вставки.");
+            return;
+        }
+
+        // 1. Получаем адрес для вставки
+        int insertAddress;
+        try {
+            insertAddress = Integer.parseInt(hexTable.getModel().getValueAt(selectedRow, 0).toString(), 16) + selectedColumn - 1;
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Ошибка при вычислении адреса: " + e.getMessage());
+            return;
+        }
+
+        // 2. Получаем данные из буфера обмена
+        String data = "";
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        try {
+            data = (String) clipboard.getData(DataFlavor.stringFlavor);
+        } catch (UnsupportedFlavorException | IOException e) {
+            JOptionPane.showMessageDialog(this, "Не удалось получить данные из буфера обмена: " + e.getMessage());
+            return;
+        }
+
+        // 3. Преобразуем данные из буфера обмена в массив байтов
+        String[] byteStrings = data.split("\\s+");
+        byte[] dataToInsert = new byte[byteStrings.length];
+        try {
+            for (int i = 0; i < byteStrings.length; i++) {
+                dataToInsert[i] = (byte) Integer.parseInt(byteStrings[i], 16);
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Неверный формат байта в буфере обмена: " + e.getMessage());
+            return;
+        }
+
+        // 4. Спрашиваем пользователя, как вставить байты: с заменой или без
+        Object[] options = {"Заменить", "Вставить", "Отмена"};
+        int choice = JOptionPane.showOptionDialog(this,
+                "Как вставить байты из буфера обмена?",
+                "Выбор способа вставки",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        // 5. Вставляем байты в соответствии с выбором пользователя
+        switch (choice) {
+            case 0: // Заменить
+                insertBytesWithReplace(insertAddress, dataToInsert); // Используем перегруженный метод
+                break;
+            case 1: // Вставить
+                insertBytesWithoutReplace(insertAddress, dataToInsert); // Используем перегруженный метод
+                break;
+            default: // Отмена
+                return;
+        }
+
+        // 6. Обновляем таблицу
+        updateTableData();
+    }
+
+    // Перегруженный метод insertBytesWithReplace для использования массива байтов
+    private void insertBytesWithReplace(int insertAddress, byte[] dataToInsert) {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+            raf.seek(insertAddress);
+            raf.write(dataToInsert);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Ошибка при записи в файл: " + e.getMessage());
+            return;
+        }
+    }
+
+    // Перегруженный метод insertBytesWithoutReplace для использования массива байтов
+    private void insertBytesWithoutReplace(int insertAddress, byte[] dataToInsert) {
+        try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
+            long fileLength = raf.length();
+            long insertLength = dataToInsert.length;
+
+            // Сдвигаем байты с конца файла, чтобы не затереть данные
+            for (long i = fileLength - 1; i >= insertAddress; i--) {
+                raf.seek(i);
+                byte b = raf.readByte();
+                raf.seek(i + insertLength);
+                if (i + insertLength < fileLength + insertLength) {
+                    raf.writeByte(b);
+                } else {
+                    // Если выходим за пределы исходного файла, просто пропускаем запись
+                }
+            }
+
+            // 4. Записываем данные в файл, начиная с insertAddress
+            raf.seek(insertAddress);
+            raf.write(dataToInsert);
+
+            // 5. Увеличиваем длину файла на размер вставленных данных
+            raf.setLength(fileLength + insertLength);
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Ошибка при вставке байтов: " + e.getMessage());
+            return;
+        }
+    }
+
+    private void updateTableData() {
+        // 1. Очистить текущую модель таблицы
+        DefaultTableModel model = (DefaultTableModel) hexTable.getModel();
+        while (model.getRowCount() > 0) {
+            model.removeRow(0);
+        }
+
+        // 2. Заново прочитать данные из файла
+        int currentPage = getCurrentPage(); // Получаем номер текущей страницы
+        DefaultTableModel newModel;
+        try {
+            newModel = transformIntoHEX.getHexPage(file, currentPage); // Читаем данные для текущей страницы
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Ошибка при чтении файла: " + e.getMessage());
+            return;
+        }
+
+        // 3. Заполнить таблицу новыми данными
+        hexTable.setModel(newModel);
+    }
+
+    public int getCurrentPage() {
+        try {
+            int firstAddress = Integer.parseInt(hexTable.getModel().getValueAt(0, 0).toString(), 16);
+            return firstAddress / PAGE_SIZE;
+        } catch (Exception e) {
+            return 0; // Если произошла ошибка, возвращаем 0 (первая страница)
+        }
+    }
 }
